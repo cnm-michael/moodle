@@ -45,6 +45,7 @@ class mod_choice_renderer extends plugin_renderer_base {
 
         $html = html_writer::start_tag('form', $attributes);
         $html .= html_writer::start_tag('ul', array('class' => 'choices list-unstyled unstyled'));
+        $html .= html_writer::tag('div', '', array('class'=> 'choicesleftoptionfill')); // centre the options horizontally
 
         $availableoption = count($options['options']);
         $choicecount = 0;
@@ -61,17 +62,19 @@ class mod_choice_renderer extends plugin_renderer_base {
             $option->attributes->id = 'choice_'.$choicecount;
             $option->attributes->class = 'mx-1';
 
-            $labeltext = $option->text;
+            $labeltext = str_replace('\r', '<br>', $option->text);
             if (!empty($option->attributes->disabled)) {
                 $labeltext .= ' ' . get_string('full', 'choice');
                 $availableoption--;
             }
 
-            $html .= html_writer::empty_tag('input', (array)$option->attributes + $disabled);
             $html .= html_writer::tag('label', $labeltext, array('for'=>$option->attributes->id));
+            $html .= html_writer::empty_tag('input', (array)$option->attributes + $disabled);
             $html .= html_writer::end_tag('li');
         }
+
         $html .= html_writer::tag('li','', array('class'=>'clearfloat'));
+        $html .= html_writer::tag('div', '', array('class'=> 'choicesrightoptionfill')); // centre the options horizontally
         $html .= html_writer::end_tag('ul');
         $html .= html_writer::tag('div', '', array('class'=>'clearfloat'));
         $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'sesskey', 'value'=>sesskey()));

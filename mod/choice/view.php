@@ -142,10 +142,16 @@ $current = choice_get_my_response($choice);
 if (isloggedin() && (!empty($current)) &&
     (empty($choice->allowupdate) || ($timenow > $choice->timeclose)) ) {
     $choicetexts = array();
+    $choiceresponses = array();
     foreach ($current as $c) {
         $choicetexts[] = format_string(choice_get_option_text($choice, $c->optionid));
+        $cr = choice_get_my_response_response($choice, $c->optionid);
+        foreach ($cr as $_cr) { 
+            $choiceresponses[] = $_cr->text; // format_string($c->text);
+        }
     }
     echo $OUTPUT->box(get_string("yourselection", "choice", userdate($choice->timeopen)).": ".implode('; ', $choicetexts), 'generalbox', 'yourselection');
+    echo $OUTPUT->box(implode('; ', $choiceresponses), 'generalbox', 'yourselectionresponse'); //print_r($choiceresponses,true); //
 }
 
 /// Print the form
@@ -168,9 +174,9 @@ if ( (!$current or $choice->allowupdate) and $choiceopen and is_enrolled($contex
     // Show information on how the results will be published to students.
     $publishinfo = null;
     switch ($choice->showresults) {
-        case CHOICE_SHOWRESULTS_NOT:
-            $publishinfo = get_string('publishinfonever', 'choice');
-            break;
+        // case CHOICE_SHOWRESULTS_NOT:
+        //     $publishinfo = get_string('publishinfonever', 'choice');
+        //     break;
 
         case CHOICE_SHOWRESULTS_AFTER_ANSWER:
             if ($choice->publish == CHOICE_PUBLISH_ANONYMOUS) {
@@ -241,7 +247,7 @@ if (choice_can_view_results($choice, $current, $choiceopen)) {
     echo $OUTPUT->box($resultstable);
 
 } else if (!$choiceformshown) {
-    echo $OUTPUT->box(get_string('noresultsviewable', 'choice'));
+    // echo $OUTPUT->box(get_string('noresultsviewable', 'choice'));
 }
 
 echo $OUTPUT->footer();

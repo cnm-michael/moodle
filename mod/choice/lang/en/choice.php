@@ -63,6 +63,7 @@ $string['limitanswers_help'] = 'This option allows you to limit the number of pa
 Please note that if you use this activity in group mode, then the limit is per group. For example, if the limit is set to 5, then 5 members of each group can select the option. If there are 3 groups, this would mean that up to 5 x 3 = 15 participants could select the option.
 
 If limits are disabled then any number of participants can select each of the options.';
+$string['showresponse_help'] = 'This option allows you to show a special response when a particular option is selected.';
 $string['choice:readresponses'] = 'View responses';
 $string['choicesaved'] = 'Your choice has been saved';
 $string['choicetext'] = 'Choice text';
@@ -85,6 +86,7 @@ $string['indicator:socialbreadthdef_link'] = 'Learning_analytics_indicators#Soci
 $string['limit'] = 'Limit';
 $string['limitno'] = 'Limit {no}';
 $string['limitanswers'] = 'Limit the number of responses allowed';
+$string['showresponse'] = 'Show a special response once a choice is selected';
 $string['modulename'] = 'Choice';
 $string['modulename_help'] = 'The choice activity module enables a teacher to ask a single question and offer a selection of possible responses.
 
@@ -138,6 +140,8 @@ $string['removeresponses'] = 'Remove all responses';
 $string['responses'] = 'Responses';
 $string['responsesresultgraphheader'] = 'Graph display';
 $string['responsesto'] = 'Responses to {$a}';
+$string['response'] = 'Response';
+$string['responseno'] = 'Response {no}';
 $string['results'] = 'Results';
 $string['savemychoice'] = 'Save my choice';
 $string['search:activity'] = 'Choice - activity information';

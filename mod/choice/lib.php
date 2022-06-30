@@ -138,6 +138,17 @@ function choice_add_instance($choice) {
         }
     }
 
+    foreach ($choice->response as $key => $value) {
+        $value = trim($value);
+        if (isset($value) && $value <> '') {
+            $response = new stdClass();
+            $response->text = $value;
+            $response->choiceid = $choice->id;
+            $response->timemodified = time();
+            $DB->insert_record("choice_responses", $response);
+        }
+    }
+
     // Add calendar events if necessary.
     choice_set_events($choice);
     if (!empty($choice->completionexpected)) {
@@ -174,22 +185,55 @@ function choice_update_instance($choice) {
             $option->maxanswers = $choice->limit[$key];
         }
         $option->timemodified = time();
+
+        $response = new stdClass();
+        $response->text = $choice->response[$key];
+        $response->choiceid = $choice->id;
+        $response->timemodified = time();
         if (isset($choice->optionid[$key]) && !empty($choice->optionid[$key])){//existing choice record
             $option->id=$choice->optionid[$key];
+            $response->optionid=$choice->optionid[$key];
+            $response->id=$choice->responseid[$key];
             if (isset($value) && $value <> '') {
                 $DB->update_record("choice_options", $option);
+                $DB->update_record("choice_responses", $response);
             } else {
                 // Remove the empty (unused) option.
                 $DB->delete_records("choice_options", array("id" => $option->id));
+                // Remove the empty (unused) response.
+                $DB->delete_records("choice_responses", array("choiceid" => $choice->id, "optionid" => $option->id));
                 // Delete any answers associated with this option.
                 $DB->delete_records("choice_answers", array("choiceid" => $choice->id, "optionid" => $option->id));
             }
         } else {
             if (isset($value) && $value <> '') {
-                $DB->insert_record("choice_options", $option);
+                $response->optionid = $DB->insert_record("choice_options", $option);
+                $DB->insert_record("choice_responses", $response);
             }
         }
     }
+
+    // foreach ($choice->response as $key => $value) {
+    //     $value = trim($value);
+    //     $response = new stdClass();
+    //     $response->text = $value;
+    //     $response->choiceid = $choice->id;
+    //     $response->optionid = $choice->optionid[$key];
+    //     $response->timemodified = time();
+    //     if (isset($choice->responseid[$key]) && !empty($choice->responseid[$key])){//existing choice record
+    //         $response->id=$choice->responseid[$key];
+    //         if (isset($value) && $value <> '') {
+    //             $DB->update_record("choice_responses", $response);
+    //         } else {
+    //             // Remove the empty (unused) response.
+    //             $DB->delete_records("choice_responses", array("choiceid" => $choice->id, "optionid" => $option->id));
+    //         }
+    //     } else {
+    //         if (isset($value) && $value <> '') {
+    //             $DB->insert_record("choice_responses", $response);
+    //         }
+    //     }
+    // }
 
     // Add calendar events if necessary.
     choice_set_events($choice);
@@ -221,7 +265,7 @@ function choice_prepare_options($choice, $user, $coursemodule, $allresponses) {
             $option = new stdClass;
             $option->attributes = new stdClass;
             $option->attributes->value = $optionid;
-            $option->text = format_string($text);
+            $option->text = $text; // format_string($text);
             $option->maxanswers = $choice->maxanswers[$optionid];
             $option->displaylayout = $choice->display;
 
@@ -633,6 +677,10 @@ function choice_delete_instance($id) {
         $result = false;
     }
 
+    if (! $DB->delete_records("choice_responses", array("choiceid"=>"$choice->id"))) {
+        $result = false;
+    }
+
     if (! $DB->delete_records("choice", array("id"=>"$choice->id"))) {
         $result = false;
     }
@@ -677,6 +725,11 @@ function choice_get_choice($choiceid) {
             foreach ($options as $option) {
                 $choice->option[$option->id] = $option->text;
                 $choice->maxanswers[$option->id] = $option->maxanswers;
+            }
+            if ($responses = $DB->get_records("choice_responses", array("choiceid" => $choiceid), "id")) {
+                foreach ($responses as $res) {
+                    $choice->responses[$res->id] = $res->text;
+                }
             }
             return $choice;
         }
@@ -952,6 +1005,18 @@ function choice_get_user_response($choice, $userid) {
 function choice_get_my_response($choice) {
     global $USER;
     return choice_get_user_response($choice, $USER->id);
+}
+
+/**
+ * Get my responses on a given choice.
+ *
+ * @param stdClass $choice Choice record
+ * @return array of choice response records
+ * @since  Moodle 3.0
+ */
+function choice_get_my_response_response($choice, $optionid) {
+    global $DB;
+    return $DB->get_records('choice_responses', array('choiceid' => $choice->id, 'optionid' => $optionid), 'text');
 }
 
 

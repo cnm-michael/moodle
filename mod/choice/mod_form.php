@@ -44,10 +44,15 @@ class mod_choice_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'limitanswers', get_string('limitanswers', 'choice'));
         $mform->addHelpButton('limitanswers', 'limitanswers', 'choice');
 
+        $mform->addElement('selectyesno', 'showresponse', get_string('showresponse', 'choice'));
+        $mform->addHelpButton('showresponse', 'showresponse', 'choice');
+
         $repeatarray = array();
         $repeatarray[] = $mform->createElement('text', 'option', get_string('optionno', 'choice'));
         $repeatarray[] = $mform->createElement('text', 'limit', get_string('limitno', 'choice'));
+        $repeatarray[] = $mform->createElement('textarea', 'response', get_string('responseno', 'choice'));
         $repeatarray[] = $mform->createElement('hidden', 'optionid', 0);
+        $repeatarray[] = $mform->createElement('hidden', 'responseid', 0);
 
         if ($this->_instance){
             $repeatno = $DB->count_records('choice_options', array('choiceid'=>$this->_instance));
@@ -62,10 +67,16 @@ class mod_choice_mod_form extends moodleform_mod {
         $repeateloptions['limit']['rule'] = 'numeric';
         $repeateloptions['limit']['type'] = PARAM_INT;
 
+        $repeateloptions['response']['default'] = '';
+        $repeateloptions['response']['hideif'] = array('showresponse', 'eq', 0);
+        // $repeateloptions['response']['rule'] = 'numeric';
+        $repeateloptions['response']['type'] = PARAM_RAW;
+
         $repeateloptions['option']['helpbutton'] = array('choiceoptions', 'choice');
         $mform->setType('option', PARAM_CLEANHTML);
 
         $mform->setType('optionid', PARAM_INT);
+        $mform->setType('responseid', PARAM_INT);
 
         $this->repeat_elements($repeatarray, $repeatno,
                     $repeateloptions, 'option_repeats', 'option_add_fields', 3, null, true);
@@ -109,15 +120,22 @@ class mod_choice_mod_form extends moodleform_mod {
     function data_preprocessing(&$default_values){
         global $DB;
         if (!empty($this->_instance) && ($options = $DB->get_records_menu('choice_options',array('choiceid'=>$this->_instance), 'id', 'id,text'))
+               && ($responses = $DB->get_records_menu('choice_responses',array('choiceid'=>$this->_instance), 'id', 'id,text'))
                && ($options2 = $DB->get_records_menu('choice_options', array('choiceid'=>$this->_instance), 'id', 'id,maxanswers')) ) {
             $choiceids=array_keys($options);
             $options=array_values($options);
             $options2=array_values($options2);
+            $responseids=array_keys($responses);
+            $responses=array_values($responses);
 
             foreach (array_keys($options) as $key){
                 $default_values['option['.$key.']'] = $options[$key];
                 $default_values['limit['.$key.']'] = $options2[$key];
                 $default_values['optionid['.$key.']'] = $choiceids[$key];
+                if (isset($responses[$key])) {
+                    $default_values['response['.$key.']'] = $responses[$key];
+                    $default_values['responseid['.$key.']'] = $responseids[$key];
+                }
             }
 
         }
