@@ -40,7 +40,7 @@ class backup_choice_activity_structure_step extends backup_activity_structure_st
         $choice = new backup_nested_element('choice', array('id'), array(
             'name', 'intro', 'introformat', 'publish',
             'showresults', 'display', 'allowupdate', 'allowmultiple', 'showunanswered',
-            'limitanswers', 'timeopen', 'timeclose', 'timemodified',
+            'limitanswers', 'showresponse', 'timeopen', 'timeclose', 'timemodified',
             'completionsubmit', 'showpreview', 'includeinactive'));
 
         $options = new backup_nested_element('options');
@@ -48,6 +48,11 @@ class backup_choice_activity_structure_step extends backup_activity_structure_st
         $option = new backup_nested_element('option', array('id'), array(
             'text', 'maxanswers', 'timemodified'));
 
+        $responses = new backup_nested_element('responses');
+
+        $response = new backup_nested_element('response', array('id'), array(
+            'optionid', 'text', 'timemodified'));
+            
         $answers = new backup_nested_element('answers');
 
         $answer = new backup_nested_element('answer', array('id'), array(
@@ -57,6 +62,9 @@ class backup_choice_activity_structure_step extends backup_activity_structure_st
         $choice->add_child($options);
         $options->add_child($option);
 
+        $choice->add_child($responses);
+        $responses->add_child($response);
+
         $choice->add_child($answers);
         $answers->add_child($answer);
 
@@ -64,6 +72,8 @@ class backup_choice_activity_structure_step extends backup_activity_structure_st
         $choice->set_source_table('choice', array('id' => backup::VAR_ACTIVITYID));
 
         $option->set_source_table('choice_options', array('choiceid' => backup::VAR_PARENTID), 'id ASC');
+
+        $response->set_source_table('choice_responses', array('choiceid' => backup::VAR_PARENTID), 'id ASC');
 
         // All the rest of elements only happen if we are including user info
         if ($userinfo) {

@@ -38,6 +38,7 @@ class restore_choice_activity_structure_step extends restore_activity_structure_
 
         $paths[] = new restore_path_element('choice', '/activity/choice');
         $paths[] = new restore_path_element('choice_option', '/activity/choice/options/option');
+        $paths[] = new restore_path_element('choice_response', '/activity/choice/responses/response');
         if ($userinfo) {
             $paths[] = new restore_path_element('choice_answer', '/activity/choice/answers/answer');
         }
@@ -74,6 +75,20 @@ class restore_choice_activity_structure_step extends restore_activity_structure_
 
         $newitemid = $DB->insert_record('choice_options', $data);
         $this->set_mapping('choice_option', $oldid, $newitemid);
+    }
+
+
+    protected function process_choice_response($data) {
+        global $DB;
+
+        $data = (object)$data;
+
+        $data->choiceid = $this->get_new_parentid('choice');
+        $data->optionid = $this->get_mappingid('choice_option', $data->optionid);
+
+        $newitemid = $DB->insert_record('choice_responses', $data);
+        // No need to save this mapping as far as nothing depend on it
+        // (child paths, file areas nor links decoder)
     }
 
     protected function process_choice_answer($data) {
